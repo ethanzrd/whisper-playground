@@ -1,46 +1,28 @@
-<div align="center">
-  <img width="60px" src="https://user-images.githubusercontent.com/6180201/124313197-cc93f200-db70-11eb-864a-fc65765fc038.png" alt="giant microphone"/>   
- <br/>
-  <h2 align="center">Whisper Playground</h2>
-  <h6 align="center">Instantly build speech2text apps in 99 languages using OpenAI's Whisper</h6>
-  <h6 align="center"> Live demo https://whisperui.monsterapi.ai</h6>
-</div>
+realTimeDiarization branch changelog:
 
-![visitors](https://visitor-badge.glitch.me/badge?page_id=saharmor.whisper-playground&left_color=green&right_color=red)
+Changelog:
 
-https://user-images.githubusercontent.com/6180201/194214280-3a4106d5-53cf-4463-ba0e-201d8e1b0c0e.mp4
+Client Modifications:
 
+- Replaced the usage of react-mic with AudioContext for audio processing.
+- Eliminated the interim data variable and all its references.
+- Implemented WebSocket functionality for continuous audio streaming to the server instead of sending incremental API requests.
+- Removed the variable responsible for checking transcription status and its references, as the server now receives audio chunks continuously.
+- Removed the transcription timeout setting as it is no longer necessary.
+- Refactored components to accommodate the new configuration.
 
-# Contribution ideas
-- [ ] Stream audio using web sockets over the current approach of incrementally sending audio chunks
-- [ ] Implement diarization (speaker identification) using `pyannote-audio` ([example](https://github.com/openai/whisper/discussions/264))
+Server Modifications:
 
-# Setup
-1. Whisper requires the command-line tool [`ffmpeg`](https://ffmpeg.org/) and [`portaudio`](http://portaudio.com/docs/v19-doxydocs/index.html) to be installed on your system, which is available from most package managers:
-```bash
-# on Ubuntu or Debian
-sudo apt update && sudo apt install ffmpeg
-sudo apt install portaudio19-dev
+- Completely rebuilt the server as an event-driven asynchronous server, replacing the previous synchronous server implementation (app.py file removed).
+- Integrated the Diart library for real-time speaker diarization.
+- Incorporated whisper-timestamped library for accurate transcription timestamps, aligning transcriptions with audio for improved speaker diarization.
+- Enhanced transcription context by maintaining a buffer of past transcriptions for each client, enabling model conditioning (refer to "Prompting" in Whisper's documentation).
+- Introduced alpha-stage multi-client support by creating separate ASR and diarization pipeline instances for each client (untested).
 
-# on Arch Linux
-sudo pacman -S ffmpeg
-sudo pacman -S portaudio
+To-do list:
 
-# on MacOS using Homebrew (https://brew.sh/)
-brew install ffmpeg
-brew install portaudio
-
-# on Windows using Chocolatey (https://chocolatey.org/)
-choco install ffmpeg
-
-# on Windows using Scoop (https://scoop.sh/)
-scoop install ffmpeg
-```
-
-2. Clone or fork this repository
-3. Install the backend and frontend environmet `sh install_playground.sh`
-4. Run the backend `cd backend && source venv/bin/activate && flask run --port 8000`
-5. In a different terminal, run the React frontend `cd interface && yarn start`
-
-# License
-This repository and the code and model weights of Whisper are released under the MIT License.
+- Implement error handling for non-existent clients attempting to connect/disconnect.
+- Explore faster implementation options for transcription, such as WhisperX or contributing to whisper-timestamped.
+- Implement and refine logging using the logging library.
+- Test and validate multi-client support for the ASR and diarization pipeline.
+- Add requirements.txt / Modify install_playground.sh
