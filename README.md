@@ -21,8 +21,6 @@ Server Modifications:
 
 To-do list:
 
-- Implement error handling for non-existent clients attempting to connect/disconnect.
 - Explore faster implementation options for transcription, such as WhisperX or contributing to whisper-timestamped.
-- Implement and refine logging using the logging library.
 - Test and validate multi-client support for the ASR and diarization pipeline.
-- Add requirements.txt / Modify install_playground.sh
+- Make the transcription thread a separate process to maintain the main thread's responsiveness.
