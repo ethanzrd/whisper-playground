@@ -35,6 +35,7 @@ async def handle_stream_end(sid):
 
 @sio.on("audioChunk")
 def handle_chunk(sid, chunk):
+    print("chunk arrived in server")
     whisprer.receive_chunk(sid, chunk)
 
 

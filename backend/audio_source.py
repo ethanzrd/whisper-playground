@@ -9,4 +9,6 @@ class StreamingSocketAudioSource(AudioSource):
         super().__init__(uri=sid, sample_rate=self.sample_rate)
 
     def receive_chunk(self, chunk):
+        print("about to put chunk in stream")
         self.stream.on_next(decode_audio(chunk))
+        print("chunk put in stream")

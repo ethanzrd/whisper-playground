@@ -5,6 +5,7 @@ import traceback
 from client import Client
 import asyncio
 import threading
+import time
 
 
 class Whisprer:
@@ -12,8 +13,21 @@ class Whisprer:
     def __init__(self):
         self.clients = {}
 
-    def transcription_thread(self, sid):
+    def handle_new_chunks(self, sid):
+        print("New chunks handler started")
+        client = self.clients[sid]
+        source = client.get_source()
+        while True:
+            if not client.audio_chunks.empty():
+                current_chunk = client.audio_chunks.get()
+                source.receive_chunk(
+                    current_chunk)  # not a heavy operation but a blocking one at times, shouldn't block the main thread
+
+    async def transcription_thread(self, sid):
         print("Transcription thread started")
+        loop = asyncio.get_event_loop()
+        loop.run_in_executor(None, self.handle_new_chunks, sid)
+        print(asyncio.get_running_loop())
         client = self.clients[sid]
         source = client.get_source()
         diarization_pipeline = client.get_diarization_pipeline()
@@ -35,13 +49,13 @@ class Whisprer:
             ops.map(jsonify_transcription),
             ops.take_while(lambda result: result is not None and len(result) > 0 and not client.is_disconnected())
         ).subscribe(
-            on_next=lambda result: asyncio.create_task(client.send_transcription(result)),
+            on_next=lambda result: asyncio.run(client.send_transcription(result)),
             on_error=lambda _: traceback.print_exc(),
         )
 
     async def start_stream(self, sid, sio, config):
         if sid not in self.clients.keys():
-            transcription_thread = threading.Thread(target=self.transcription_thread, args=(sid,))
+            transcription_thread = threading.Thread(target=asyncio.run, args=(self.transcription_thread(sid),))
             new_client = Client(sid=sid, socket=sio, transcription_thread=transcription_thread, config=config)
             self.clients[sid] = new_client
             await new_client.start_transcribing()
@@ -68,4 +82,5 @@ class Whisprer:
         client = self.clients[sid]
         if not client:
             print("Non-existent client tried to receive chunk.")  # TODO - Implement Error Handling
-        client.receive_chunk(chunk)
+        client.audio_chunks.put(chunk)
+        print("chunk added")

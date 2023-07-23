@@ -49,8 +49,6 @@ const App = ({ classes }) => {
   const [isStreamPending, setIsStreamPending] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState("english");
   const [selectedModel, setSelectedModel] = useState("small");
-  const [transcribeTimeout, setTranscribeTimout] = useState(5);
-  const [status, setStatus] = useState("Not Recording");
 
   const socketRef = useRef(null);
 
@@ -125,6 +123,7 @@ const App = ({ classes }) => {
         socketRef.current.on(
           "transcriptionDataAvailable",
           (transcriptionData) => {
+            console.log(`transcriptionData: ${transcriptionData}`);
             handleTranscribedData(transcriptionData);
           }
         );

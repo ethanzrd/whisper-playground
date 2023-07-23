@@ -25,6 +25,7 @@ class WhisperTranscriber:
         self._buffer = ""
 
     def transcribe(self, waveform):
+        print("transcription started")
         """Transcribe audio using Whisper"""
         # Pad/trim audio to fit 30 seconds as required by Whisper
         audio = waveform.data.astype("float32").reshape(-1)

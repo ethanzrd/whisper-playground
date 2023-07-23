@@ -3,6 +3,7 @@ from audio_source import StreamingSocketAudioSource
 from config import DIARIZATION_PIPELINE_CONFIG, NON_SPECIFIC_MODELS
 from whisper_transcriber import WhisperTranscriber
 import asyncio
+from queue import Queue
 
 
 class Client:
@@ -15,6 +16,7 @@ class Client:
         self.source = StreamingSocketAudioSource(sid)
         self.socket = socket
         self.transcription_thread = transcription_thread
+        self.audio_chunks = Queue()
         self.disconnected = False
 
         self.initialize_transcriber()
@@ -29,7 +31,7 @@ class Client:
         await self.socket.emit("whisperingStarted")
 
     async def stop_transcribing(self):
-        self.transcription_thread.join()
+        self.transcription_thread.join()  # TODO: CONSIDER ADDING AWAIT - RECOMMENDED BY CHATGPT
         print("Transcription thread closed")
         await self.socket.emit("whisperingStopped")
 
