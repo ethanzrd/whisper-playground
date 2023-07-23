@@ -5,7 +5,7 @@ import traceback
 from client import Client
 import asyncio
 import threading
-import time
+import logging
 
 
 class Whisprer:
@@ -14,20 +14,21 @@ class Whisprer:
         self.clients = {}
 
     def handle_new_chunks(self, sid):
-        print("New chunks handler started")
+        logging.info("New chunks handler started")
         client = self.clients[sid]
         source = client.get_source()
         while True:
             if not client.audio_chunks.empty():
                 current_chunk = client.audio_chunks.get()
-                source.receive_chunk(
-                    current_chunk)  # not a heavy operation but a blocking one at times, shouldn't block the main thread
+                # not a heavy operation but a blocking one at times, shouldn't block the main thread thanks to asyncio
+                source.receive_chunk(current_chunk)
 
+    # FULL CREDIT TO JUANMA CORIA FOR THIS DIART IMPLEMENTATION WITH WHISPER (COLOR YOUR CAPTIONS ON MEDIUM)
     async def transcription_thread(self, sid):
-        print("Transcription thread started")
+        logging.info("Transcription thread started")
         loop = asyncio.get_event_loop()
         loop.run_in_executor(None, self.handle_new_chunks, sid)
-        print(asyncio.get_running_loop())
+        logging.info(asyncio.get_running_loop())
         client = self.clients[sid]
         source = client.get_source()
         diarization_pipeline = client.get_diarization_pipeline()
@@ -60,7 +61,7 @@ class Whisprer:
             self.clients[sid] = new_client
             await new_client.start_transcribing()
         else:
-            print("Warning - A streaming client tried to initiate another stream")  # TODO - Implement Error Handling
+            logging.warning("A streaming client tried to initiate another stream")
             await sio.emit("This client is already transcribing")
 
     async def end_stream(self, sid):
@@ -74,13 +75,13 @@ class Whisprer:
             client = self.clients[sid]
             client.handle_disconnection()
             self.clients.pop(sid)
-            print("Disconnected client removed")
+            logging.info("Disconnected client removed")
         else:
-            print("Warning - A non-existent client tried to disconnect from the stream.")
+            logging.warning("A non-existent client tried to disconnect from the stream.")
 
     def receive_chunk(self, sid, chunk):
-        client = self.clients[sid]
+        client = self.clients.get(sid)
         if not client:
-            print("Non-existent client tried to receive chunk.")  # TODO - Implement Error Handling
+            logging.warning("Non-existent client tried to receive chunk.")
+            return
         client.audio_chunks.put(chunk)
-        print("chunk added")

@@ -1,6 +1,7 @@
+import logging
 from diart import OnlineSpeakerDiarization
 from audio_source import StreamingSocketAudioSource
-from config import DIARIZATION_PIPELINE_CONFIG, NON_SPECIFIC_MODELS
+from config import DIARIZATION_PIPELINE_CONFIG, LANGUAGE_MAPPING
 from whisper_transcriber import WhisperTranscriber
 import asyncio
 from queue import Queue
@@ -22,27 +23,35 @@ class Client:
         self.initialize_transcriber()
 
     def initialize_transcriber(self):
-        print("started")
         model = self.config.get("model", "small")
-        self.transcriber = WhisperTranscriber(model=model)
+        language = self.config.get("language", None)
+        if language is not None:
+            try:
+                language_code = LANGUAGE_MAPPING[language.lower()]
+            except KeyError:
+                logging.warning("Language not supported")
+                language_code = None
+        else:
+            language_code = None
+        self.transcriber = WhisperTranscriber(model_name=model, language_code=language_code)
 
     async def start_transcribing(self):
         self.transcription_thread.start()
         await self.socket.emit("whisperingStarted")
 
     async def stop_transcribing(self):
-        self.transcription_thread.join()  # TODO: CONSIDER ADDING AWAIT - RECOMMENDED BY CHATGPT
-        print("Transcription thread closed")
+        self.transcription_thread.join()
+        logging.info("Transcription thread closed")
         await self.socket.emit("whisperingStopped")
 
     def handle_disconnection(self):
         self.disconnected = True
         self.transcription_thread.join()
-        print("Transcription thread closed after disconnection")
+        logging.info("Transcription thread closed after disconnection")
 
     async def send_transcription(self, transcription):
-        print("Transcription sent")
-        print(transcription)
+        logging.info("Transcription sent")
+        logging.info(transcription)
         await self.socket.emit("transcriptionDataAvailable", transcription)
 
     def receive_chunk(self, chunk):

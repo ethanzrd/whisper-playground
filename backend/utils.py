@@ -2,6 +2,9 @@ import numpy as np
 from pyannote.core import Annotation, SlidingWindowFeature, SlidingWindow
 
 
+# FULL CREDIT TO JUANMA CORIA FOR THIS DIART IMPLEMENTATION WITH WHISPER (COLOR YOUR CAPTIONS ON MEDIUM)
+
+
 def concat(chunks, collar=0.05):
     """
     Concatenate predictions and audio

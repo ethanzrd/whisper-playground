@@ -10,3 +10,23 @@ DIARIZATION_PIPELINE_CONFIG = PipelineConfig(
 )
 SAMPLE_RATE = 16000
 NON_SPECIFIC_MODELS = ["large", "large-v1", "large-v2"]
+
+# Language code mapping
+LANGUAGE_MAPPING = {
+    "english": "en",
+    "chinese": "zh",
+    "german": "de",
+    "spanish": "es",
+    "russian": "ru",
+    "korean": "ko",
+    "french": "fr",
+    "japanese": "ja",
+    "portuguese": "pt",
+    "turkish": "tr",
+    "polish": "pl",
+    "catalan": "ca",
+    "dutch": "nl",
+    "arabic": "ar",
+    "swedish": "sv",
+    "italian": "it",
+}

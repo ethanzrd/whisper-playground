@@ -4,6 +4,11 @@ import numpy as np
 import whisper_timestamped as whisper
 from pyannote.core import Segment
 from contextlib import contextmanager
+import logging
+from config import NON_SPECIFIC_MODELS
+
+
+# FULL CREDIT TO JUANMA CORIA FOR THIS DIART IMPLEMENTATION WITH WHISPER (COLOR YOUR CAPTIONS ON MEDIUM)
 
 
 @contextmanager
@@ -20,12 +25,19 @@ def suppress_stdout():
 
 
 class WhisperTranscriber:
-    def __init__(self, model="small", device=None):
-        self.model = whisper.load_model(model, device=device)
+    def __init__(self, language_code=None, model_name="small", device=None):
+        self.language = language_code
+        self.model = whisper.load_model(self.get_full_model_name(model_name, language_code), device=device)
         self._buffer = ""
 
+    @staticmethod
+    def get_full_model_name(model_name, language_code):
+        if model_name not in NON_SPECIFIC_MODELS and language_code == "en":
+            model_name += ".en"
+        return model_name
+
     def transcribe(self, waveform):
-        print("transcription started")
+        logging.info("Transcription started")
         """Transcribe audio using Whisper"""
         # Pad/trim audio to fit 30 seconds as required by Whisper
         audio = waveform.data.astype("float32").reshape(-1)
@@ -38,6 +50,8 @@ class WhisperTranscriber:
                 audio,
                 # We use past transcriptions to condition the model
                 initial_prompt=self._buffer,
+                # If model is English-specific, prevent language detection (causes KeyError in whisper-timestamped)
+                **({"language": self.language} if self.language is not None else {}),
                 verbose=True  # Disable progress bar
             )
 
