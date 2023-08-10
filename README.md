@@ -2,41 +2,47 @@
   <img width="60px" src="https://user-images.githubusercontent.com/6180201/124313197-cc93f200-db70-11eb-864a-fc65765fc038.png" alt="giant microphone"/>   
  <br/>
   <h2 align="center">Whisper Playground</h2>
-  <h6 align="center">Instantly build speech2text apps in 99 languages using OpenAI's Whisper</h6>
-  <h6 align="center"> Live demo https://whisperui.monsterapi.ai</h6>
+  <h6 align="center">Instantly build real-time speech2text apps in 99 languages using faster-whisper, Diart, and Pyannote</h6>
+  <h6 align="center">Live demo out soon!</h6>
 </div>
 
 ![visitors](https://visitor-badge.glitch.me/badge?page_id=saharmor.whisper-playground&left_color=green&right_color=red)
 
-https://user-images.githubusercontent.com/6180201/194214280-3a4106d5-53cf-4463-ba0e-201d8e1b0c0e.mp4
+
+
+https://github.com/ethanzrd/whisper-playground/assets/79014814/44a9bcf0-e374-4c71-8189-1d99824fbdc5
+
 
 
 # Setup
-1. Whisper requires the command-line tool [`ffmpeg`](https://ffmpeg.org/) and [`portaudio`](http://portaudio.com/docs/v19-doxydocs/index.html) to be installed on your system, which is available from most package managers:
-```bash
-# on Ubuntu or Debian
-sudo apt update && sudo apt install ffmpeg
-sudo apt install portaudio19-dev
-
-# on Arch Linux
-sudo pacman -S ffmpeg
-sudo pacman -S portaudio
-
-# on MacOS using Homebrew (https://brew.sh/)
-brew install ffmpeg
-brew install portaudio
-
-# on Windows using Chocolatey (https://chocolatey.org/)
-choco install ffmpeg
-
-# on Windows using Scoop (https://scoop.sh/)
-scoop install ffmpeg
-```
-
+1. Have [`Conda`](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) and [`Yarn`](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable) on your device 
 2. Clone or fork this repository
-3. Install the backend and frontend environmet `sh install_playground.sh`
-4. Run the backend `cd backend && source venv/bin/activate && flask run --port 8000`
-5. In a different terminal, run the React frontend `cd interface && yarn start`
+3. Install the backend and frontend environment `sh install_playground.sh`
+4. Review config.py to make sure the transcription device and compute type match your setup
+5. Run the backend `cd backend && python server.py`
+6. In a different terminal, run the React frontend `cd interface && yarn start`
 
-# License
+# Parameters
+
+- Model Size: Choose the model size, from tiny to large-v2.
+- Language: Select the language you will be speaking in.
+- Transcription Timeout: Set the number of seconds the application will wait before transcribing the current audio data.
+- Beam Size: Adjust the amount of transcriptions generated and considered, which affects accuracy and transcription generation time.
+- Transcription Method: Choose "real-time" for real-time diarization and transcriptions, or "sequential" for periodic transcriptions with more context.
+
+## Troubleshooting
+
+- If you're unable to connect from the client to the server, use an ngrok tunnel to expose port 8000.
+- On MacOS, if building the wheel for safetensors fails, install Rust `brew install rust` and try again.
+
+## Known Bugs
+
+1. [In the sequential mode, there may be uncontrolled speaker swapping.](https://github.com/saharmor/whisper-playground/issues/27)
+2. [In real-time mode, audio data not meeting the transcription timeout won't be transcribed.](https://github.com/saharmor/whisper-playground/issues/28)
+3. [Speechless batches will cause errors.](https://github.com/saharmor/whisper-playground/issues/25)
+
+This repository hasn't been tested for all languages; please create an issue if you encounter any problems.
+
+## License
+
 This repository and the code and model weights of Whisper are released under the MIT License.
